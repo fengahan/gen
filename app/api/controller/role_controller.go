@@ -14,6 +14,18 @@ func (r *RoleController) GetList(c *gin.Context) {
 	return
 }
 
+//@RequestMap(method="get",path="hello")
+func (r *RoleController) Hello(c *gin.Context) {
+	c.JSON(200, "hello22222")
+	return
+}
+//@RequestMap(method="get",path="hello2")
+func (r *RoleController) Hello2(c *gin.Context) {
+	c.JSON(200, "hello22222")
+	return
+}
+
+
 //The default path is named UPDATE
 //@RequestMap(method="post")
 func (r *RoleController) Update(c *gin.Context) {

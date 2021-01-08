@@ -30,7 +30,7 @@ type ControllerRef struct {
 	Methods     []MethodRef
 }
 
-func Template(controllers []ControllerRef) []byte {
+func Template(controllers []ControllerRef,file_package string) []byte {
 	helperFuncs := template.FuncMap{
 		"makeCtrVarName": func(str string) string {
 			str = strings.ToLower(string(str[0])) + str[1:]
@@ -39,15 +39,14 @@ func Template(controllers []ControllerRef) []byte {
 		"firstLower":       FirstLower,
 		"makeGroupVarName": MakeGroupVarName,
 	}
-	for _, v := range controllers {
-		fmt.Println(v.Methods)
-	}
-	temp := `package gen_build
+
+	temp := `
+//!!!!!!This code is automatically generated for AmountRoute. Please do not change it
+package {{.Package}}
 import (
 	
 	"github.com/gin-gonic/gin"
 )
-//This code is automatically generated for AmountRoute. Please do not change it
 func AmountRoute(router *gin.Engine ) *gin.Engine {
 	{{range $i, $v := .Controllers}}
 	var {{$v.Name | makeCtrVarName}} = {{$v.PackageName}}.{{$v.Name}}{}
@@ -65,7 +64,7 @@ func AmountRoute(router *gin.Engine ) *gin.Engine {
 	// Parse the template and pass it the helper functions
 	t := template.Must(template.New("go_route_gen.tmpl").Funcs(helperFuncs).Parse(temp))
 	// Execute the template and pass it the metadata we collected before
-	t.Execute(out, map[string][]ControllerRef{"Controllers": controllers})
+	t.Execute(out, map[string]interface{}{"Controllers": controllers,"Package":file_package})
 	return out.Bytes()
 }
 
@@ -88,16 +87,17 @@ func getAllFiles(dirPath string) (files []string, err error) {
 		return nil, err
 	}
 	PthSep := string(os.PathSeparator)
-	//suffix = strings.ToUpper(suffix) //忽略后缀匹配的大小写
-
 	for _, fi := range dir {
-
-		if fi.IsDir() {
-			dirs = append(dirs, dirPath+PthSep+fi.Name())
-			newfiles, _ := getAllFiles(dirPath + PthSep + fi.Name())
-			files = append(files, newfiles...)
-		} else {
-			files = append(files, dirPath+PthSep+fi.Name())
+		if strings.HasPrefix(fi.Name(),".")==false {
+			if fi.IsDir() {
+				dirs = append(dirs, dirPath+PthSep+fi.Name())
+				newfiles, _ := getAllFiles(dirPath + PthSep + fi.Name())
+				files = append(files, newfiles...)
+			} else {
+				if  strings.HasSuffix(fi.Name(),".go")==true {
+					files = append(files, dirPath+PthSep+fi.Name())
+				}
+			}
 		}
 
 	}
@@ -105,13 +105,12 @@ func getAllFiles(dirPath string) (files []string, err error) {
 	return files, nil
 }
 
-func Gen(filePath string) {
-	var file []string
-	file, err := getAllFiles(filePath)
-	fmt.Println(file)
-	return
+func Gen(filePath string, routerFile string) {
+	var files []string
+	files, err := getAllFiles(filePath)
+
 	ctrColl := make([]ControllerRef, 0)
-	for _, v := range file {
+	for _, v := range files {
 		controllers := Parse(v)
 		for _, v := range controllers {
 			if len(v.Methods) < 1 {
@@ -120,13 +119,21 @@ func Gen(filePath string) {
 			ctrColl = append(ctrColl, v)
 		}
 	}
-
-	res := Template(ctrColl)
-	formattedCode, err := imports.Process("./struct_app/gen_build/route.go", res, &imports.Options{Comments: true})
+	s:=ParseRouterFile(routerFile)
+	res := Template(ctrColl,s)
+	formattedCode, err := imports.Process(routerFile, res, &imports.Options{Comments: true})
 	if err != nil {
 		fmt.Printf("cannot format source code, might be an error in template: %s\n", err)
 	}
-	ioutil.WriteFile("./struct_app/gen_build/route.go", formattedCode, 0777)
+	ioutil.WriteFile(routerFile, formattedCode, 0777)
+}
+func ParseRouterFile(file string) string {
+	fset := token.NewFileSet() // positions are relative to fset
+	f, err := parser.ParseFile(fset, file, nil, parser.ParseComments)
+	if err != nil {
+		panic(err)
+	}
+	return f.Name.Name
 }
 func Parse(file string) []ControllerRef {
 	controllers := make([]ControllerRef, 0)
