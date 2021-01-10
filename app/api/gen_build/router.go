@@ -8,7 +8,7 @@ import (
 	"github.com/google/wire"
 )
 
-·var SetRoleController = wire.NewSet(controller.NewRoleController, service.NewRoleService)
+var SetRoleController = wire.NewSet(controller.NewRoleController, service.NewRoleService)
 
 func InitRoleController() controller.RoleController {
 	wire.Build(SetRoleController)
