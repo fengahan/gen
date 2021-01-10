@@ -1,9 +1,6 @@
 package controller
 
 import (
-	"fmt"
-	"gen/cmd"
-	"gen/config"
 	"gen/service"
 	"github.com/gin-gonic/gin"
 )
@@ -14,8 +11,8 @@ type RoleController struct {
 	RoleService service.RoleService
 }
 
-func NewRoleController(roleService service.RoleService) RoleController {
-	return RoleController{RoleService: roleService}
+func NewRoleController(roleService service.RoleService) *RoleController {
+	return &RoleController{RoleService: roleService}
 }
 
 //@RequestMap(method="get",path="getList")
@@ -27,16 +24,13 @@ func (r *RoleController) GetList(c *gin.Context) {
 //@RequestMap(method="get",path="hello")
 func (r *RoleController) Hello(c *gin.Context) {
 
-	s := fmt.Sprintf("config.CfgManger.Redis2.Port----%s\ncmd.CfgManger.Redis2.Port-----%s", config.CfgManger.Redis2.Host, cmd.CfgManger.Redis2.Host)
-
 	//读取配置
-	c.String(200, s)
+	c.String(200, "hello")
 	return
 }
 
-//@RequestMap(method="get",path="hello3")
 func (r *RoleController) Hello3(c *gin.Context) {
-	c.String(200, "hello222222222222222222")
+	c.String(200, c.Query("name"))
 	return
 }
 

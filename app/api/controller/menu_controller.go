@@ -10,11 +10,12 @@ import (
 type MenuController struct {
 	service service.MenuService
 }
+
 /***
-	Wire 容器提供者
- */
-func NewMenuController(menuService service.MenuService)MenuController  {
-	return MenuController{service: menuService}
+Wire 容器提供者
+*/
+func NewMenuController(menuService service.MenuService) *MenuController {
+	return &MenuController{service: menuService}
 }
 
 //@RequestMap(method="post",path="create")
