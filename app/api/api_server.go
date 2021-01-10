@@ -2,11 +2,12 @@ package main
 
 import (
 	"gen/app/api/gen_build"
+	"gen/config"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-//	gen_route.Gen(".","app/api/gen_build/auto_gen_router.go")
+	config.AmountConfig()
 	r := gen_build.AmountRoute(gin.Default())
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{

@@ -2,7 +2,8 @@
 package main
 
 import (
-   "gen/cmd/gen_route"
+   "gen/internal/gen_config"
+   "gen/internal/gen_route"
    "github.com/creack/pty"
    "io"
    "os"
@@ -10,12 +11,15 @@ import (
 )
 
 func main()  {
+
+   gen_config.GenConfig()
+   gen_route.Gen(".","app/api/gen_build/router_gen_target.go")
    fs,_:=os.Getwd()
-   gen_route.Gen(".","app/api/gen_build/auto_gen_router.go")
-   c := exec.Command("go","run",fs+"/app/api/api_server.go")
+   c := exec.Command("/Users/desmond/go/bin/wire",fs+"/app/api/gen_build/wire_controller.go")
    f, err := pty.Start(c)
    if err != nil {
-      panic(err)
+    panic(err)
    }
    io.Copy(os.Stdout, f)
+
 }
