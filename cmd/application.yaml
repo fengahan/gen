@@ -1,0 +1,18 @@
+GenSystemConfig:
+  WirePath: /Users/desmond/go/bin/wire
+  ProjectList:
+    -
+      AddrPort: 8081
+      GenBuildPath: /Users/desmond/Desktop/gen/app/api/gen_build
+      GenBuildPackage: gen_build
+      WireGenFile: [/Users/desmond/Desktop/gen/app/api/gen_build/wire_controller.go]
+      Main: /Users/desmond/Desktop/gen/app/api/api_server.go
+MysqlConfig:
+  Host: 127.0.0.1
+
+#新增一个config
+Redis2:
+  Host: 127.0.0.1
+  Port: 6379
+
+
